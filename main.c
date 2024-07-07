@@ -69,7 +69,7 @@ int score_for_word(const char *word, int found) {
 }
 
 int check_word(const char *users_word) {
-    FILE *file = fopen("words.txt", "r");
+    FILE *file = fopen(word_file, "r");
     char word[100];
     int found = 0;
     char rev_word[100];
