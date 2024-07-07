@@ -149,6 +149,24 @@ bool is_grid_full(){
 int game_over(){
     return 0;
 }
+
+bool can_place_word(const char *word, int row, int col, char direction) {
+    int length = strlen(word);
+    if (direction == 'h') {
+        if (col + length > COLS) return false;  // Check horizontal bounds
+        for (int i = 0; i < length; i++) {
+            if (grid[row][col + i] != '_' && grid[row][col + i] != word[i]) return false;  // Check for clash
+        }
+    } else if (direction == 'v') {
+        if (row + length > ROWS) return false;  // Check vertical bounds
+        for (int i = 0; i < length; i++) {
+            if (grid[row + i][col] != '_' && grid[row + i][col] != word[i]) return false;  // Check for clash
+        }
+    }
+    return true;
+}
+
+
 void add_word(char *users_word){
 
     int row, col;
@@ -156,50 +174,28 @@ void add_word(char *users_word){
 
     printf("Enter the row: ");
     scanf("%d", &row);
-    row--;
     printf("Enter the column: ");
     scanf("%d", &col);
-    col--;
     printf("Enter the direction: ");
     scanf(" %c", &direction);
     printf("Users word: %s\n", users_word);
     printf("Your word %s will be placed at row %d and column %d in direction %c.\n", users_word, row, col, direction);
     
-    int bounds = 0;
-    if(direction == 'h'){
-        bounds = col + strlen(users_word);
-        if (bounds > COLS){
-            printf("Word is out of bounds\n");
-            printf("Please enter a column or direction value.\n");
-            add_word(users_word);
-            return;
-        }
-    } else if(direction == 'v'){
-        bounds = row + strlen(users_word);
-        if (bounds > ROWS){
-            printf("Word is out of bounds\n");
-            printf("Please enter a valid row or direction value.\n");
-            add_word(users_word);
-            return;
-        }
-    }
-    printf("Bounds: %d\n", bounds);
-    printf("Rows: %d\n", ROWS);
-    printf("Cols: %d\n", COLS);
+    row--; // Adjust for zero-indexed array
+    col--; // Adjust for zero-indexed array
 
-    for(int i = 0; i < strlen(users_word); i++){
-        if (grid[row][col] != '_'){
-            printf("There is a letter in the way\n");
-            printf("Please enter a valid row, column or direction value.\n");
-            add_word(users_word);
-            return;
+    if (can_place_word(users_word, row, col, direction)) {
+        for (int i = 0; i < strlen(users_word); i++) {
+            if (direction == 'h') {
+                grid[row][col + i] = users_word[i];  // Place horizontally
+            } else if (direction == 'v') {
+                grid[row + i][col] = users_word[i];  // Place vertically
+            }
         }
-        grid[row][col] = users_word[i];
-        if(direction == 'h'){
-            col++;
-        } else if(direction == 'v'){
-            row++;
-        }
+    } else {
+        printf("Cannot place word %s at (%d,%d) in direction %c\n", users_word, row + 1, col + 1, direction);
+        add_word(users_word);  // Ask again if placement failed
+        return;
     }
 
     for(int i = 0; i < ROWS; i++){
